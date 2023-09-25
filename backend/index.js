@@ -1,6 +1,8 @@
 const express = require("express")
+const bcrypt = require("bcrypt")
 
-const { connection } = require("mongoose")
+const { connection } = require("./config/db")
+const { UserModel } = require("./models/User.model")
 
 const app = express()
 app.use(express.json())
@@ -10,9 +12,24 @@ app.get("/", (req, res) => {
 })
 
 app.post("/signup", (req, res) => {
-    const { name, phone_number, email, password } = req.body
+    let { name, phone_number, email, password } = req.body
     console.log(req.body)
-    res.send({ msg: `Signup Succesfully` })
+
+    bcrypt.hash(password, 3, async function (err, hash) {
+        const new_user = new UserModel({
+            name,
+            phone_number,
+            email,
+            password: hash
+        })
+        try {
+            await new_user.save()
+            res.send({ msg: "Successfully SignUp" })
+        } catch (err) {
+            console.log(err)
+            res.send({ msg: "Something Went Wrong" })
+        }
+    });
 })
 
 app.listen(8090, async (req, res) => {
