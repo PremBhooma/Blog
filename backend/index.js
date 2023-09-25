@@ -1,8 +1,11 @@
 const express = require("express")
 const bcrypt = require("bcrypt")
+const jwt = require("jsonwebtoken")
 
 const { connection } = require("./config/db")
 const { UserModel } = require("./models/User.model")
+
+require("dotenv").config()
 
 const app = express()
 app.use(express.json())
@@ -24,12 +27,36 @@ app.post("/signup", (req, res) => {
         })
         try {
             await new_user.save()
-            res.send({ msg: "Successfully SignUp" })
+            res.send({ msg: "Successfully SignUp", new_user: new_user })
         } catch (err) {
             console.log(err)
             res.send({ msg: "Something Went Wrong" })
         }
     });
+})
+
+app.post("/login", async (req, res) => {
+    let { email, password } = req.body
+    const user = await UserModel.findOne({ email })
+
+    if (!user) {
+        res.send({ msg: "Signup First" })
+    } else {
+        const hash_password = user.password
+        console.log(hash_password)
+
+        bcrypt.compare(password, hash_password, function (err, result) {
+            // result == true
+            if (result) {
+                let token = jwt.sign({ user_id: user._id }, process.env.SECRET_KEY);
+                console.log(token)
+                res.send({ msg: "Successfully login", token: token })
+            } else {
+                res.send({ msg: "login failed" })
+            }
+        });
+
+    }
 })
 
 app.listen(8090, async (req, res) => {
