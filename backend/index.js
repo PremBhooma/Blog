@@ -27,7 +27,7 @@ app.post("/signup", (req, res) => {
         })
         try {
             await new_user.save()
-            res.send({ msg: "Successfully SignUp", new_user: new_user })
+            res.send({ msg: "Successfully SignUp" })
         } catch (err) {
             console.log(err)
             res.send({ msg: "Something Went Wrong" })
