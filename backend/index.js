@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken")
 
 const { connection } = require("./config/db")
 const { UserModel } = require("./models/User.model")
+const { blogRouter } = require("./routes/blog.routes")
 
 require("dotenv").config()
 
@@ -55,9 +56,10 @@ app.post("/login", async (req, res) => {
                 res.send({ msg: "login failed" })
             }
         });
-
     }
 })
+
+app.use("/blogs", blogRouter)
 
 app.listen(8090, async () => {
     try {
