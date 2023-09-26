@@ -20,21 +20,26 @@ const Storage = multer.diskStorage({
 })
 
 const upload = multer({
-    storage: Storage,
-    fileFilter: function (req, file, callback) {
-        if (file.mimetype == "image/png" ||
-            file.mimetype == "image/jpg"
-        ) {
-            callback(null, true)
-        } else {
-            console.log("only jpg & png file supported")
-            callback(null, false)
-        }
-    }
+    storage: Storage
+    // fileFilter: function (req, file, callback) {
+    //     if (file.mimetype == "image/png" ||
+    //         file.mimetype == "image/jpg"
+    //     ) {
+    //         callback(null, true)
+    //     } else {
+    //         console.log("only jpg & png file supported")
+    //         callback(null, false)
+    //     }
+    // }
 })
 
 blogRouter.post("/create", upload.single('image'), async (req, res) => {
     const { title, description, category } = req.body
+
+    if (!req.file) {
+        return res.status(400).json({ error: "No image file uploaded." });
+    }
+
     const { image } = req.file
 
     const author_id = req.user_id
@@ -46,11 +51,12 @@ blogRouter.post("/create", upload.single('image'), async (req, res) => {
         description,
         category,
         author_name: name,
-        author_email: email
+        author_email: email,
+        image: req.file.path // Assign the image path here
     })
-    if (req.file) {
-        new_blog.image = req.file.path
-    }
+    // if (req.file) {
+    //     new_blog.image = req.file.path
+    // }
 
     try {
         await new_blog.save()
