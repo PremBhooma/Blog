@@ -59,7 +59,7 @@ app.post("/login", async (req, res) => {
     }
 })
 
-app.listen(8090, async (req, res) => {
+app.listen(8090, async () => {
     try {
         await connection
         console.log("DB Connection Success")
