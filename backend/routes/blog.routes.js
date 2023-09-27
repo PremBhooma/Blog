@@ -10,7 +10,7 @@ const blogRouter = Router()
 blogRouter.get("/", async (req, res) => {
 
     const page = parseInt(req.query.page) - 1 || 0
-    const limit = parseInt(req.query.limit) || 3
+    const limit = parseInt(req.query.limit) || 5
     const q = req.query.q || ""
     let sort = req.query.sort || "postTime"
     let category = req.query.category || "All"
