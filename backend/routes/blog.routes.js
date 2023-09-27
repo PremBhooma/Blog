@@ -7,8 +7,48 @@ const { UserModel } = require("../models/User.model")
 
 const blogRouter = Router()
 
-blogRouter.get("/", (req, res) => {
-    res.send({ msg: "Blogs" })
+blogRouter.get("/", async (req, res) => {
+
+    const page = parseInt(req.query.page) - 1 || 0
+    const limit = parseInt(req.query.limit) || 3
+    const q = req.query.q || ""
+    let sort = req.query.sort || "postTime"
+    let category = req.query.category || "All"
+
+    const categoryOptions = await BlogModel.distinct("category");
+    category === "All"
+        ? (category = [...categoryOptions])
+        : (category = req.query.category.split(","))
+
+    req.query.sort ? (sort = req.query.sort.split(",")) : (sort = [sort])
+
+    let sortBy = {}
+    if (sort[1]) {
+        sortBy[sort[0]] = sort[1]
+    } else {
+        sortBy[sort[0]] = "asc"
+    }
+
+    const blogs = await BlogModel.find({ title: { $regex: q, $options: "i" } })
+        .where("category")
+        .in([...category])
+        .sort(sortBy)
+        .skip(page * limit)
+        .limit(limit)
+
+    const total = await BlogModel.countDocuments({
+        category: { $in: [...category] },
+        title: { $regex: q, $options: "i" },
+    })
+
+    const response = {
+        total,
+        page: page + 1,
+        limit,
+        category: categoryOptions,
+        blogs
+    }
+    res.send(response)
 })
 
 const Storage = multer.diskStorage({
